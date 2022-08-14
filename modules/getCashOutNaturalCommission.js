@@ -4,56 +4,51 @@ const getWeek = require("../node_modules/date-fns/getWeek");
 const parseISO = require("../node_modules/date-fns/parseISO");
 
 const getCashOutNaturalCommission = (
-  operationsArray,
-  user_id,
+  addData,
   date,
-  type,
-  operation,
+  user_id,
+  amount,
   cashOutNaturalConfig
 ) => {
-  const weekLimit = cashOutNaturalConfig.week_limit.amount;
+  const currentWeekNumber = getWeek(parseISO(date));
 
-  const weekOperationsArr = operationsArray
-    .filter(
-      (operationData) =>
-        operationData.user_id === user_id &&
-        getWeek(parseISO(date)) === getWeek(parseISO(operationData.date)) &&
-        operationData.type === type
-    )
-    .map((el) => {
-      return {
-        operationID: el.operationID,
-        userID: el.user_id,
-        week: getWeek(parseISO(el.date)),
-        amount: el.operation.amount,
-      };
-    });
+  for (let i = 0; i < addData.length; i++) {
+    if (addData[i].userID === user_id) {
+      for (let j = 0; j < addData[i].weeks.length; j++) {
+        if (addData[i].weeks[j].week === currentWeekNumber) {
+          if (
+            addData[i].weeks[j].week > 0 &&
+            cashOutNaturalConfig.week_limit.amount < amount
+          ) {
+            addData[i].weeks[j].weekLimit =
+              addData[i].weeks[j].weekLimit - amount;
 
-  const currentWeekTransferSum = weekOperationsArr.reduce(
-    (acc, transfer) => acc + transfer.amount,
-    0
-  );
+            return calcCommission(
+              amount - cashOutNaturalConfig.week_limit.amount,
+              cashOutNaturalConfig
+            );
+          } else if (
+            addData[i].weeks[j].weekLimit > 0 &&
+            addData[i].weeks[j].weekLimit - amount < 0
+          ) {
+            addData[i].weeks[j].weekLimit =
+              addData[i].weeks[j].weekLimit - amount;
 
-  if (
-    operation.amount > weekLimit &&
-    weekOperationsArr[0].amount === operation.amount
-  ) {
-    return numeral(
-      calcCommission(operation.amount - weekLimit, cashOutNaturalConfig)
-    ).format("0.00");
-  } else if (
-    currentWeekTransferSum > weekLimit &&
-    currentWeekTransferSum - operation.amount < weekLimit
-  ) {
-    return numeral(
-      calcCommission(currentWeekTransferSum - weekLimit, cashOutNaturalConfig)
-    ).format("0.00");
-  } else if (currentWeekTransferSum > weekLimit) {
-    return numeral(
-      calcCommission(operation.amount, cashOutNaturalConfig)
-    ).format("0.00");
-  } else if (operation.amount <= weekLimit) {
-    return numeral(0).format("0.00");
+            return calcCommission(
+              amount - addData[i].weeks[j].weekLimit,
+              cashOutNaturalConfig
+            );
+          } else if (addData[i].weeks[j].weekLimit < 0) {
+            return calcCommission(amount, cashOutNaturalConfig);
+          } else if (addData[i].weeks[j].weekLimit > 0) {
+            addData[i].weeks[j].weekLimit =
+              addData[i].weeks[j].weekLimit - amount;
+
+            return numeral(0).format("0.00");
+          }
+        }
+      }
+    }
   }
 };
 
