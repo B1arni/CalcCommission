@@ -1,8 +1,7 @@
 const getCashOutJuridicalCommission = require("./modules/getCashOutJuridicalCommission.js");
 const getCashInCommission = require("./modules/getCashInCommission.js");
 const getCashOutNaturalCommission = require("./modules/getCashOutNaturalCommission.js");
-const isJSON = require("./modules/isJSON.js");
-const requestsArr = require("./constants/requests.js");
+const requestsArr = require("./requests/requests.js");
 const setCashOutNaturalOperations = require("./modules/setCashOutNaturalOperations.js");
 const fs = require("fs");
 
@@ -21,9 +20,8 @@ const commissionCalc = () => {
           cashOutNaturalConfig
         );
 
-        for (let i = 0; i < operationsArray.length; i++) {
-          const { date, user_id, user_type, type, operation } =
-            operationsArray[i];
+        operationsArray.forEach((operationData) => {
+          const { date, user_id, user_type, type, operation } = operationData;
 
           switch (type) {
             case "cash_in":
@@ -50,7 +48,7 @@ const commissionCalc = () => {
                 );
               }
           }
-        }
+        });
       })
       .catch(() => console.log("Fetch failed"));
   } catch {

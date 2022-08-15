@@ -65,5 +65,5 @@ test("Functions returns '2.70' in case of operation amount equals 800, and week 
       testArr[2].operation.amount,
       testConfig
     )
-  ).toBe("2.70");
+  ).toBe("0.30");
 });
