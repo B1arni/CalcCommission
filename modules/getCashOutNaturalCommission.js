@@ -17,14 +17,15 @@ const getCashOutNaturalCommission = (
       for (let j = 0; j < addData[i].weeks.length; j++) {
         if (addData[i].weeks[j].week === currentWeekNumber) {
           if (
-            addData[i].weeks[j].week > 0 &&
-            cashOutNaturalConfig.week_limit.amount < amount
+            addData[i].weeks[j].weekLimit > 0 &&
+            addData[i].weeks[j].weekLimit < amount
           ) {
+            const currentWeekLimit = addData[i].weeks[j].weekLimit;
             addData[i].weeks[j].weekLimit =
               addData[i].weeks[j].weekLimit - amount;
 
             return calcCommission(
-              amount - cashOutNaturalConfig.week_limit.amount,
+              amount - currentWeekLimit,
               cashOutNaturalConfig
             );
           } else if (
