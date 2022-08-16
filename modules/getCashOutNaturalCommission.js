@@ -1,7 +1,7 @@
 const findCurrentUserIndex = require("./supportToGetCashOutNatural/findCurrentUserIndex.js");
 const findCurrentWeek = require("./supportToGetCashOutNatural/findCurrentWeek.js");
 const createUserOperation = require("./supportToGetCashOutNatural/createUserOperation.js");
-const commissionOptions = require("./supportToGetCashOutNatural/commissionOptions.js");
+const calcExceededAmount = require("./supportToGetCashOutNatural/calcExceededAmount.js");
 
 const getCashOutNaturalCommission = (
   weekLimitsData,
@@ -24,7 +24,7 @@ const getCashOutNaturalCommission = (
       weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
         .weekLimit - amount;
 
-    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
+    return calcExceededAmount(currentWeekLimit, amount, cashOutNaturalConfig);
   } else if (
     findCurrentUserIndex(weekLimitsData, user_id, date) !== -1 &&
     findCurrentWeek(weekLimitsData, date) === undefined
@@ -43,7 +43,7 @@ const getCashOutNaturalCommission = (
       weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
         .weekLimit - amount;
 
-    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
+    return calcExceededAmount(currentWeekLimit, amount, cashOutNaturalConfig);
   } else if (findCurrentUserIndex(weekLimitsData, user_id, date) === -1) {
     weekLimitsData.push(
       createUserOperation(date, user_id, cashOutNaturalConfig)
@@ -59,7 +59,7 @@ const getCashOutNaturalCommission = (
       weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
         .weekLimit - amount;
 
-    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
+    return calcExceededAmount(currentWeekLimit, amount, cashOutNaturalConfig);
   }
 };
 
