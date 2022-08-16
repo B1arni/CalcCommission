@@ -1,5 +1,4 @@
 const getCashOutNaturalCommission = require("./getCashOutNaturalCommission.js");
-const setCashOutNaturalOperations = require("./setCashOutNaturalOperations");
 
 const testArr = [
   {
@@ -25,17 +24,17 @@ const testArr = [
   },
 ];
 
+const testWeekLimitsData = [];
+
 const testConfig = {
   percents: 0.3,
   week_limit: { amount: 1000, currency: "EUR" },
 };
 
-const testAddData = setCashOutNaturalOperations(testArr, testConfig);
-
 test("Functions returns '1.50' in case of operation amount equals 1500", () => {
   expect(
     getCashOutNaturalCommission(
-      testAddData,
+      testWeekLimitsData,
       testArr[0].date,
       testArr[0].user_id,
       testArr[0].operation.amount,
@@ -47,7 +46,7 @@ test("Functions returns '1.50' in case of operation amount equals 1500", () => {
 test("Functions returns '0.00' in case of operation amount equals 300, and week limit wasn't exceeded", () => {
   expect(
     getCashOutNaturalCommission(
-      testAddData,
+      testWeekLimitsData,
       testArr[1].date,
       testArr[1].user_id,
       testArr[1].operation.amount,
@@ -59,7 +58,7 @@ test("Functions returns '0.00' in case of operation amount equals 300, and week 
 test("Functions returns '2.70' in case of operation amount equals 800, and week limit will be exceeded after operation", () => {
   expect(
     getCashOutNaturalCommission(
-      testAddData,
+      testWeekLimitsData,
       testArr[2].date,
       testArr[2].user_id,
       testArr[2].operation.amount,

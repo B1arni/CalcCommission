@@ -2,7 +2,6 @@ const getCashOutJuridicalCommission = require("./modules/getCashOutJuridicalComm
 const getCashInCommission = require("./modules/getCashInCommission.js");
 const getCashOutNaturalCommission = require("./modules/getCashOutNaturalCommission.js");
 const requestsArr = require("./requests/requests.js");
-const setCashOutNaturalOperations = require("./modules/setCashOutNaturalOperations.js");
 const fs = require("fs");
 
 const commissionCalc = () => {
@@ -15,10 +14,7 @@ const commissionCalc = () => {
         const [cashInConfig, cashOutJuridicalConfig, cashOutNaturalConfig] =
           configs;
 
-        const addData = setCashOutNaturalOperations(
-          operationsArray,
-          cashOutNaturalConfig
-        );
+        const weekLimitsData = [];
 
         operationsArray.forEach((operationData) => {
           const { date, user_id, user_type, type, operation } = operationData;
@@ -39,13 +35,14 @@ const commissionCalc = () => {
               } else {
                 console.log(
                   getCashOutNaturalCommission(
-                    addData,
+                    weekLimitsData,
                     date,
                     user_id,
                     operation.amount,
                     cashOutNaturalConfig
                   )
                 );
+                break;
               }
           }
         });

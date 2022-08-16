@@ -1,55 +1,65 @@
-const calcCommission = require("./calcCommission.js");
-const numeral = require("numeral");
-const getWeek = require("../node_modules/date-fns/getWeek");
-const parseISO = require("../node_modules/date-fns/parseISO");
+const findCurrentUserIndex = require("./supportToGetCashOutNatural/findCurrentUserIndex.js");
+const findCurrentWeek = require("./supportToGetCashOutNatural/findCurrentWeek.js");
+const createUserOperation = require("./supportToGetCashOutNatural/createUserOperation.js");
+const commissionOptions = require("./supportToGetCashOutNatural/commissionOptions.js");
 
 const getCashOutNaturalCommission = (
-  addData,
+  weekLimitsData,
   date,
   user_id,
   amount,
   cashOutNaturalConfig
 ) => {
-  const currentWeekNumber = getWeek(parseISO(date));
+  if (
+    findCurrentUserIndex(weekLimitsData, user_id, date) !== -1 &&
+    findCurrentWeek(weekLimitsData, date) !== undefined
+  ) {
+    const currentWeekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit;
 
-  for (let i = 0; i < addData.length; i++) {
-    if (addData[i].userID === user_id) {
-      for (let j = 0; j < addData[i].weeks.length; j++) {
-        if (addData[i].weeks[j].week === currentWeekNumber) {
-          if (
-            addData[i].weeks[j].weekLimit > 0 &&
-            addData[i].weeks[j].weekLimit < amount
-          ) {
-            const currentWeekLimit = addData[i].weeks[j].weekLimit;
-            addData[i].weeks[j].weekLimit =
-              addData[i].weeks[j].weekLimit - amount;
+    weekLimitsData[
+      findCurrentUserIndex(weekLimitsData, user_id, date)
+    ].week.weekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit - amount;
 
-            return calcCommission(
-              amount - currentWeekLimit,
-              cashOutNaturalConfig
-            );
-          } else if (
-            addData[i].weeks[j].weekLimit > 0 &&
-            addData[i].weeks[j].weekLimit - amount < 0
-          ) {
-            addData[i].weeks[j].weekLimit =
-              addData[i].weeks[j].weekLimit - amount;
+    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
+  } else if (
+    findCurrentUserIndex(weekLimitsData, user_id, date) !== -1 &&
+    findCurrentWeek(weekLimitsData, date) === undefined
+  ) {
+    weekLimitsData.push(
+      createUserOperation(date, user_id, cashOutNaturalConfig)
+    );
 
-            return calcCommission(
-              amount - addData[i].weeks[j].weekLimit,
-              cashOutNaturalConfig
-            );
-          } else if (addData[i].weeks[j].weekLimit < 0) {
-            return calcCommission(amount, cashOutNaturalConfig);
-          } else if (addData[i].weeks[j].weekLimit > 0) {
-            addData[i].weeks[j].weekLimit =
-              addData[i].weeks[j].weekLimit - amount;
+    const currentWeekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit;
 
-            return numeral(0).format("0.00");
-          }
-        }
-      }
-    }
+    weekLimitsData[
+      findCurrentUserIndex(weekLimitsData, user_id, date)
+    ].week.weekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit - amount;
+
+    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
+  } else if (findCurrentUserIndex(weekLimitsData, user_id, date) === -1) {
+    weekLimitsData.push(
+      createUserOperation(date, user_id, cashOutNaturalConfig)
+    );
+
+    const currentWeekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit;
+
+    weekLimitsData[
+      findCurrentUserIndex(weekLimitsData, user_id, date)
+    ].week.weekLimit =
+      weekLimitsData[findCurrentUserIndex(weekLimitsData, user_id, date)].week
+        .weekLimit - amount;
+
+    return commissionOptions(currentWeekLimit, amount, cashOutNaturalConfig);
   }
 };
 
