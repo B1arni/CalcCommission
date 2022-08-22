@@ -1,4 +1,5 @@
 const urls = require("../constants/urls");
+const fetch = require("node-fetch");
 
 const requests = urls.map((url) =>
   fetch(url)

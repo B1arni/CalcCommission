@@ -5,60 +5,56 @@ const requests = require("./requests/requests.js");
 const fs = require("fs");
 
 const commissionCalc = () => {
-  const path = fs.readFileSync(process.argv[2]);
+  if (fs.existsSync(process.argv[2])) {
+    const path = fs.readFileSync(process.argv[2]);
+    try {
+      const operations = JSON.parse(path);
 
-  try {
-    if (fs.existsSync(process.argv[2])) {
-      try {
-        const operations = JSON.parse(path);
+      Promise.all(requests)
+        .then((configs) => {
+          const [cashInConfig, cashOutJuridicalConfig, cashOutNaturalConfig] =
+            configs;
 
-        Promise.all(requests)
-          .then((configs) => {
-            const [cashInConfig, cashOutJuridicalConfig, cashOutNaturalConfig] =
-              configs;
+          const weekLimitsData = [];
 
-            const weekLimitsData = [];
+          operations.forEach((operationData) => {
+            const { date, user_id, user_type, type, operation } = operationData;
 
-            operations.forEach((operationData) => {
-              const { date, user_id, user_type, type, operation } =
-                operationData;
-
-              switch (type) {
-                case "cash_in":
+            switch (type) {
+              case "cash_in":
+                console.log(
+                  getCashInCommission(operation.amount, cashInConfig)
+                );
+                break;
+              case "cash_out":
+                if (user_type === "juridical") {
                   console.log(
-                    getCashInCommission(operation.amount, cashInConfig)
+                    getCashOutJuridicalCommission(
+                      operation.amount,
+                      cashOutJuridicalConfig
+                    )
                   );
                   break;
-                case "cash_out":
-                  if (user_type === "juridical") {
-                    console.log(
-                      getCashOutJuridicalCommission(
-                        operation.amount,
-                        cashOutJuridicalConfig
-                      )
-                    );
-                    break;
-                  } else {
-                    console.log(
-                      getCashOutNaturalCommission(
-                        weekLimitsData,
-                        date,
-                        user_id,
-                        operation.amount,
-                        cashOutNaturalConfig
-                      )
-                    );
-                    break;
-                  }
-              }
-            });
-          })
-          .catch(() => console.log("Fetch failed"));
-      } catch (err) {
-        console.error(err);
-      }
+                } else {
+                  console.log(
+                    getCashOutNaturalCommission(
+                      weekLimitsData,
+                      date,
+                      user_id,
+                      operation.amount,
+                      cashOutNaturalConfig
+                    )
+                  );
+                  break;
+                }
+            }
+          });
+        })
+        .catch(() => console.log("Fetch failed"));
+    } catch (err) {
+      console.error(err);
     }
-  } catch {
+  } else {
     console.log("Invalid path to file");
   }
 };
